@@ -48,39 +48,27 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val plantDB = PlantDB(this@MainActivity)
 
-
-        // TODO: Database files here
-        val plants = List<ArrayList<String>>(3) { ArrayList<String>() };
-        plants[0].add("Asparagus Fern");
-        plants[0].add("7 Days");
-        plants[0].add("Partial Sun");
-
-        plants[1].add("Croton");
-        plants[1].add("4 Days");
-        plants[1].add("Full Sun");
-
-        plants[2].add("Pothos");
-        plants[2].add("10 Days");
-        plants[2].add("Shade");
+        val plants = plantDB.getRecords().toList()
 
         setContent {
             GreenThumbTheme {
                 // A surface container using the 'background' color from the theme
-                MyApp(plants = plants)
+                MyApp(plants = plants, plantDB)
             }
         }
     }
 }
 
 @Composable
-fun MyApp(plants: List<ArrayList<String>>){
+fun MyApp(plants: List<Array<String>>, plantDB: PlantDB){
     var isTitleScreen by rememberSaveable {mutableStateOf(true)}
     Surface(modifier = Modifier.fillMaxSize(), color = Color(234, 242, 239, 255)) {
         if(isTitleScreen) {
             TitleScreen(onContinueClicked = { isTitleScreen = false })
         } else {
-            SeparateCards(array = plants)
+            SeparateCards(array = plants, plantDB)
         }
     }
 }
@@ -107,6 +95,7 @@ fun TitleScreen(
 
 @Composable
 fun AddNewPlantCard(
+    plantDB: PlantDB,
     modifier: Modifier = Modifier
 ){
     Column {
@@ -118,17 +107,17 @@ fun AddNewPlantCard(
                 .padding(vertical = 4.dp, horizontal = 8.dp)
                 .border(2.dp, Color(13, 9, 10, 255), RoundedCornerShape(10.dp))
         ) {
-            CardContentEntry()
+            CardContentEntry(plantDB)
         }
     }
 }
 
 @Composable
-fun SeparateCards(array: List<ArrayList<String>>){
+fun SeparateCards(array: List<Array<String>>, plantDB: PlantDB){
 
     LazyColumn (modifier = Modifier.padding(vertical = 4.dp)) {
         items (1){
-            AddNewPlantCard()
+            AddNewPlantCard(plantDB)
         }
         items(items = array) {plant ->
             PlantCard(plant)
@@ -137,7 +126,7 @@ fun SeparateCards(array: List<ArrayList<String>>){
 }
 
 @Composable
-fun PlantCard(array: ArrayList<String>) {
+fun PlantCard(array: Array<String>) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(102, 119, 97, 255)
@@ -152,7 +141,7 @@ fun PlantCard(array: ArrayList<String>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardContentEntry() {
+fun CardContentEntry(plantDB: PlantDB) {
     var expandedCard by remember { mutableStateOf(false) }
 
     Row {
@@ -218,7 +207,7 @@ fun CardContentEntry() {
                         label = { Text(text = "Toxicity")}
                     )
                 }
-                Button(onClick = { captureInput(plantName, water, light, toxicity) }) {
+                Button(onClick = { captureInput(plantName, water, light, toxicity, plantDB) }) {
                     Text(text = "Submit")
                 }
             }
@@ -227,7 +216,7 @@ fun CardContentEntry() {
 }
 
 @Composable
-fun CardContent(array: ArrayList<String>) {
+fun CardContent(array: Array<String>) {
     var expandedCard by remember { mutableStateOf(false) }
 
 
@@ -272,8 +261,8 @@ fun CardContent(array: ArrayList<String>) {
     
 }
 
-fun captureInput(plantName: String, water: String, light: String, toxicity: String ) {
-    val plantDB = PlantDB()
+fun captureInput(plantName: String, water: String, light: String, toxicity: String, plantDB: PlantDB) {
+
 
     Log.i("USER_SUBMIT", "Name of plant: $plantName");
     Log.i("USER_SUBMIT", "Water req: $water");
