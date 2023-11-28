@@ -13,11 +13,13 @@ package com.example.greenthumb
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageButton
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -244,7 +246,7 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
 
     Row {
         var modifier = Modifier
-            .padding(12.dp)
+            .padding(8.dp)
             .animateContentSize(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -253,18 +255,28 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
             )
         Column (
             modifier = Modifier
-                .weight(1f)
-                .padding(12.dp)
+                .padding(8.dp)
+                .weight(3f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
         ){
-            Text(text = "New plant", style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.Thin,
-                fontSize = 32.sp,
+            Text(text = "New plant", style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Normal,
                 color = Color(246, 245, 250, 255)
             ))
         }
-        Column {
-            Button(onClick = { expandedCard = !expandedCard }) {
-                Text(text = "Add")
+        Column (
+            modifier = Modifier
+                .weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            IconButton(onClick = { expandedCard = !expandedCard }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.addplant),
+                    contentDescription = "Add new plant",
+                    modifier = Modifier.size(35.dp)
+                )
             }
         }
     }
@@ -410,11 +422,20 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
         }
 
         Row {
-            Button(onClick = { deletePlant(plant, plantDao, plantArray) }) {
-                Text(text = "Delete")
+            IconButton(onClick = { plantWatered(plant, plantDao, plantArray) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.plantwatered),
+                    contentDescription = "Plant watered today",
+                    modifier = Modifier.size(50.dp)
+                )
             }
-            Button(onClick = { plantWatered(plant, plantDao, plantArray) }) {
-                Text(text = "Watered")
+
+            IconButton(onClick = { deletePlant(plant, plantDao, plantArray) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.deleteentry),
+                    contentDescription = "Remove plant from list",
+                    modifier = Modifier.size(30.dp)
+                )
             }
         }
     }
