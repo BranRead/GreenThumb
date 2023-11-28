@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
         val plantDB = Room.databaseBuilder(
             applicationContext,
             PlantDatabase::class.java, "greenthumb-database"
-        ).build()
+        ).allowMainThreadQueries().build()
 
         val plantDao = plantDB.plantDao()
 

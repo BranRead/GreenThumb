@@ -3,7 +3,6 @@ package com.example.greenthumb;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 import java.util.Date;
 
@@ -18,8 +17,8 @@ public class Plant {
     @ColumnInfo(name = "watering_cycle")
     public int wateringCycle;
 
-//    @TypeConverters(Date)
-//    public Date lastWatered;
+    @ColumnInfo(name = "last_watered")
+    public Date lastWatered;
 
     @ColumnInfo(name = "light_req")
     public String lightReq;
@@ -50,13 +49,13 @@ public class Plant {
         this.wateringCycle = wateringCycle;
     }
 
-//    public Date getLastWatered() {
-//        return lastWatered;
-//    }
-//
-//    public void setLastWatered(Date lastWatered) {
-//        this.lastWatered = lastWatered;
-//    }
+    public Date getLastWatered() {
+        return lastWatered;
+    }
+
+    public void setLastWatered(Date lastWatered) {
+        this.lastWatered = lastWatered;
+    }
 
     public String getLightReq() {
         return lightReq;
