@@ -57,6 +57,14 @@ public class Plant {
         this.lastWatered = lastWatered;
     }
 
+    public int getPlant_id() {
+        return plant_id;
+    }
+
+    public void setPlant_id(int plant_id) {
+        this.plant_id = plant_id;
+    }
+
     public String getLightReq() {
         return lightReq;
     }

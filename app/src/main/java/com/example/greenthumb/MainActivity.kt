@@ -2,7 +2,6 @@ package com.example.greenthumb
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.NumberPicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
@@ -110,8 +109,6 @@ fun TitleScreen(
 
 @Composable
 fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
-
-
     val plantArray = remember {
         mutableStateListOf<Plant>()
     }
@@ -125,13 +122,8 @@ fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
             AddNewPlantCard(plantDao, plantArray)
         }
         items (items = plantArray) {plant ->
-            PlantCard(plant)
+            PlantCard(plant, plantDao, plantArray)
         }
-//        items(1){
-//            Button(onClick = {  }) {
-//
-//            }
-//        }
     }
 }
 
@@ -199,6 +191,8 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
                     )
                 }
                 Row{
+                    // Using NumberPicker library found here:
+                    // https://github.com/ChargeMap/Compose-NumberPicker
                     NumberPicker(
                         value = water,
                         range = 1..30,
@@ -230,7 +224,7 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
 }
 
 @Composable
-fun PlantCard(plant: Plant) {
+fun PlantCard(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(102, 119, 97, 255)
@@ -239,14 +233,14 @@ fun PlantCard(plant: Plant) {
             .padding(vertical = 4.dp, horizontal = 8.dp)
             .border(2.dp, Color(13, 9, 10, 255), RoundedCornerShape(10.dp))
     ) {
-        CardContent(plant)
+        CardContent(plant, plantDao, plantArray)
     }
 }
 
 
 
 @Composable
-fun CardContent(plant: Plant) {
+fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
     var expandedCard by remember { mutableStateOf(false) }
 
     Row {
@@ -285,11 +279,24 @@ fun CardContent(plant: Plant) {
         Row {
             Text(text = plant.getWateringCycle().toString())
             Text(text = plant.getLightReq())
+            Button(onClick = { deletePlant(plant, plantDao, plantArray) }) {
+                Text(text = "Delete")
+            }
         }
     }
 }
 
+fun deletePlant(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
+    // Deletes from DB
+    plantDao.delete(plant);
 
+    // Deletes from mutable list triggering new list to be made
+    for (listedPlant in plantArray) {
+        if (plant.getPlant_id() == listedPlant.getPlant_id()){
+            plantArray.remove(listedPlant);
+        }
+    }
+}
 
 
 fun captureInput(plantName: String, water: Int, light: String, toxicity: String, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {

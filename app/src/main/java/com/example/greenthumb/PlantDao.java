@@ -1,6 +1,7 @@
 package com.example.greenthumb;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -13,4 +14,7 @@ public interface PlantDao {
 
     @Insert
     void insertAll(Plant... plants);
+
+    @Delete
+    void delete(Plant plant);
 }
