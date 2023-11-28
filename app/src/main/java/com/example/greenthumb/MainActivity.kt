@@ -76,7 +76,10 @@ class MainActivity : ComponentActivity() {
     // TODO: Make adding plant give an indication of the plant being added.
     // TODO: Make next plant in list not appear expanded when deleting.
     // TODO: Overhaul UI.
-    // Title Screen image and main app image for background
+    // Make entire card clickable for dropdown
+    // Icons for launcher and buttons
+    // Format card info
+    // Format add plant
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -140,14 +143,15 @@ fun TitleScreen(
             .paint(
                 painterResource(id = R.drawable.titlescreen),
                 contentScale = ContentScale.FillBounds
-            ),
+            )
+            .padding(8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
                 .background(
-                    Color(144, 103, 198, 200),
+                    Color(36, 130, 50, 200),
                     RoundedCornerShape(10.dp)
                 )
                 .border(
@@ -155,30 +159,37 @@ fun TitleScreen(
                     Color(4, 15, 15, 255),
                     RoundedCornerShape(10.dp)
                 )
-                .padding(16.dp)
+                .padding()
                 .clickable { onContinueClicked() }
         ) {
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(0.dp, 16.dp)
-            ){
-                Text(text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineLarge
-                        .copy(color = Color(246, 245, 250, 255))
-                )
-            }
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(30.dp)
-                    .padding(0.dp, 16.dp)
-            ){
-                Text(text = "Tap to start!",
-                    color = Color(246, 245, 250, 255))
-            }
+            Column (
+                modifier = Modifier,
 
+            ){
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+
+                ){
+                    Text(text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineLarge
+                            .copy(color = Color(246, 245, 250, 255))
+                    )
+                }
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Text(text = "Tap to start!",
+                        color = Color(246, 245, 250, 255))
+                }
+            }
         }
     }
 }
@@ -342,9 +353,8 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
             )
         Column (
             modifier = Modifier
-                .weight(1f)
+                .weight(11f)
                 .padding(8.dp)
-                .size(200.dp, 50.dp)
         ){
             Text(text = plant.getName(), style = MaterialTheme.typography.headlineLarge.copy(
                 fontWeight = FontWeight.Thin,
@@ -354,7 +364,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
         }
         Column (
             modifier = Modifier
-                .fillMaxSize()
+                .weight(4f)
                 .weight(1f)
                 .padding(4.dp),
             verticalArrangement = Arrangement.Center,
@@ -364,14 +374,18 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
                 Text(
                     text = daysUntilNextWaterTitle(plant, plantDao),
                     modifier = Modifier.padding(0.dp, 16.dp),
-                    style = MaterialTheme.typography.labelSmall.copy(
+                    style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.Normal,
                         color = Color(246, 245, 250, 255)
                     )
                 )
             }
         }
-        Column {
+        Column (
+            modifier = Modifier
+                .weight(1f)
+                .padding(0.dp, 0.dp, 8.dp, 0.dp)
+        ){
             IconButton(onClick = { expandedCard = !expandedCard }) {
                 Icon(
                     imageVector = if (expandedCard) Filled.ExpandLess else Filled.ExpandMore,
@@ -437,6 +451,8 @@ fun deletePlant(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
     for (listedPlant in plantArray) {
         if (plant.getPlant_id() == listedPlant.getPlant_id()){
             plantArray.remove(listedPlant);
+            // Essential to avoid java.util.concurrentmodificationexception
+            break;
         }
     }
 }
@@ -451,6 +467,7 @@ fun plantWatered(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList
     for ((index, listedPlant) in plantArray.withIndex()) {
         if (plant.getPlant_id() == listedPlant.getPlant_id()){
             plantArray[index] =  plant;
+            break;
         }
     }
     plantDao.update(plant);
