@@ -4,6 +4,14 @@
 // <a href="https://www.flaticon.com/free-icons/watering-can" title="watering can icons">Watering can icons created by Mihimihi - Flaticon</a>
 // Plus icon
 // <a href="https://www.flaticon.com/free-icons/plus" title="plus icons">Plus icons created by dmitri13 - Flaticon</a>
+// Add plant icon
+// <a href="https://www.flaticon.com/free-icons/mulch" title="mulch icons">Mulch icons created by AmruID - Flaticon</a>
+// Bright
+// <a href="https://www.flaticon.com/free-icons/sun" title="sun icons">Sun icons created by Good Ware - Flaticon</a>
+// Medium
+// <a href="https://www.flaticon.com/free-icons/bright" title="bright icons">Bright icons created by Freepik - Flaticon</a>
+// Shade
+// <a href="https://www.flaticon.com/free-icons/moon" title="moon icons">Moon icons created by Good Ware - Flaticon</a>
 // Coffee Shop plants
 // Photo by <a href="https://unsplash.com/@ceydaciftci?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Ceyda Çiftci</a> on <a href="https://unsplash.com/photos/green-potted-plants-on-brown-wooden-seat-dDVU6D_6T80?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
 // Main app background
@@ -27,6 +35,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -283,52 +292,86 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
         }
     }
     if (expandedCard){
-        Row ( modifier = Modifier
-            .padding()
-        ) {
-            Column {
+            Column (
+                modifier = Modifier.padding(32.dp, 4.dp).fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
                 var plantName by remember { mutableStateOf("") }
                 var water by remember { mutableStateOf(0) }
                 var light by remember { mutableStateOf("") }
                 var toxicity by remember { mutableStateOf("") }
 
-                Row{
+                Row(
+                    modifier = Modifier
+                ){
                     TextField(
                         value = plantName,
                         onValueChange = { plantName = it },
                         label = { Text(text = "Plant name")}
                     )
                 }
-                Row{
-                    // Using NumberPicker library found here:
-                    // https://github.com/ChargeMap/Compose-NumberPicker
-                    NumberPicker(
-                        value = water,
-                        range = 1..30,
-                        onValueChange = {
-                            water = it
-                        }
-                    )
+                Row(
+                    modifier = Modifier
+                        .background(Color(246, 245, 250, 255))
+                        .padding(0.dp, 8.dp)
+
+                ){
+                    Column (
+                        modifier = Modifier
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = "Days between watering: ",
+                            modifier = Modifier.padding(16.dp, 54.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
+
+
+                    Column (
+                        modifier = Modifier.padding(16.dp, 0.dp)
+                    ){
+                        // Using NumberPicker library found here:
+                        // https://github.com/ChargeMap/Compose-NumberPicker
+                        NumberPicker(
+                            value = water,
+                            range = 1..30,
+                            onValueChange = {
+                                water = it
+                            }
+                        )
+                    }
                 }
-                Row{
+                Row(
+                    modifier = Modifier
+                ){
                     TextField(
                         value = light,
                         onValueChange = { light = it },
                         label = { Text(text = "Light req.")}
                     )
                 }
-                Row{
+                Row(
+                    modifier = Modifier
+                ){
                     TextField(
                         value = toxicity,
                         onValueChange = { toxicity = it },
                         label = { Text(text = "Toxicity")}
                     )
                 }
-                Button(onClick = { captureInput(plantName, water.toInt(), light, toxicity, plantDao, plantArray) }) {
-                    Text(text = "Submit")
+                IconButton(onClick = {
+                    captureInput(plantName, water.toInt(), light, toxicity, plantDao, plantArray)
+                    expandedCard = !expandedCard
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.addplantexpanded),
+                        contentDescription = "Add new plant",
+                        modifier = Modifier.size(50.dp)
+                    )
                 }
             }
-        }
+
     }
 }
 
@@ -416,7 +459,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(16.dp, 4.dp)
+                .padding(48.dp, 4.dp)
         ){
             if (plant.getLastWatered() != null) {
                 Text(
@@ -433,7 +476,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(16.dp, 4.dp)
+                .padding(48.dp, 4.dp)
         ){
             if (plant.getLastWatered() != null) {
                 Text(text = daysUntilNextWaterBody(plant, plantDao),
@@ -447,7 +490,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(16.dp, 4.dp)
+                .padding(48.dp, 4.dp)
         ){
             Text(text = "Light Requirements: " + plant.getLightReq(),
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -459,7 +502,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(16.dp, 4.dp)
+                .padding(48.dp, 4.dp)
         ){
             Text(text = "Toxicity: " + plant.getToxicity(),
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -478,7 +521,10 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
                     .border(2.dp, Color(4, 15, 15, 255), RoundedCornerShape(30.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
-                IconButton(onClick = { plantWatered(plant, plantDao, plantArray) }) {
+                IconButton(onClick = {
+                    plantWatered(plant, plantDao, plantArray);
+                    expandedCard = !expandedCard;
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.plantwatered),
                         contentDescription = "Plant watered today",
@@ -494,7 +540,10 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
                     .border(2.dp, Color(4, 15, 15, 255), RoundedCornerShape(30.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(onClick = { deletePlant(plant, plantDao, plantArray) }) {
+                IconButton(onClick = {
+                    deletePlant(plant, plantDao, plantArray);
+                    expandedCard = !expandedCard;
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.deleteentry),
                         contentDescription = "Remove plant from list",
