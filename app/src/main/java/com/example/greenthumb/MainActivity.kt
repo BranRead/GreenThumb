@@ -47,8 +47,10 @@ import androidx.compose.ui.unit.sp
 import androidx.room.Room
 import com.chargemap.compose.numberpicker.NumberPicker
 import com.example.greenthumb.ui.theme.GreenThumbTheme
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDate
+import java.time.Period
+import java.time.format.DateTimeFormatter
+import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
     // TODO: Make adding plant give an indication of the plant being added.
@@ -64,6 +66,25 @@ class MainActivity : ComponentActivity() {
         ).allowMainThreadQueries().build()
 
         val plantDao = plantDB.plantDao()
+
+        //Only need this for hardcoding plants to test
+        val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+        plantDao.insertAll(Plant(
+            "Purple Heart",
+            7,
+            LocalDate.parse("25/11/2023", dateFormatter),
+            "Bright",
+            "Cat"
+        ))
+
+        plantDao.insertAll(Plant(
+            "Aloe Vera",
+            14,
+            LocalDate.parse("10/11/2023", dateFormatter),
+            "Indirect",
+            "Cat"
+        ))
 
         val plants: List<Plant> = plantDao.getAll();
 
@@ -285,7 +306,8 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
             Text(text = plant.getWateringCycle().toString())
             Text(text = plant.getLightReq())
             if(plant.getLastWatered() != null){
-                Text(text = plant.getLastWatered().toString())
+                Text(text = plant.getLastWatered().month.toString() + " " + plant.getLastWatered().dayOfMonth)
+                Text(text = daysUntilNextWater(plant, plantDao))
             }
             Button(onClick = { deletePlant(plant, plantDao, plantArray) }) {
                 Text(text = "Delete")
@@ -294,6 +316,18 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
                 Text(text = "Watered")
             }
         }
+    }
+}
+
+fun daysUntilNextWater(plant: Plant, plantDao: PlantDao): String {
+
+    val localDate: LocalDate = LocalDate.now()
+    val lastWater = Period.between(plant.getLastWatered(), localDate).days
+    val daysPassed = plant.getWateringCycle() - lastWater;
+    if(daysPassed >= 0){
+        return "Plant will need to be watered in: " + daysPassed + " day(s).";
+    } else {
+        return "Plant should've been watered: " + daysPassed.absoluteValue + " day(s) ago.";
     }
 }
 
@@ -310,12 +344,11 @@ fun deletePlant(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 }
 
 fun plantWatered(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
-    val formatter = SimpleDateFormat("yyyy-MM-dd");
-    val date = Date()
-    val currentDateString = formatter.format(date)
-    val currentDateDate = formatter.parse(currentDateString);
 
-    plant.setLastWatered(currentDateDate)
+    val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val localDate: LocalDate = LocalDate.now()
+
+    plant.setLastWatered(localDate)
 
     for ((index, listedPlant) in plantArray.withIndex()) {
         if (plant.getPlant_id() == listedPlant.getPlant_id()){

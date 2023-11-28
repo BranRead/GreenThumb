@@ -2,8 +2,10 @@ package com.example.greenthumb;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -18,7 +20,7 @@ public class Plant {
     public int wateringCycle;
 
     @ColumnInfo(name = "last_watered")
-    public Date lastWatered;
+    public LocalDate lastWatered;
 
     @ColumnInfo(name = "light_req")
     public String lightReq;
@@ -29,6 +31,15 @@ public class Plant {
     public Plant(String name, int wateringCycle, String lightReq, String toxicity){
         this.name = name;
         this.wateringCycle = wateringCycle;
+        this.lightReq = lightReq;
+        this.toxicity = toxicity;
+    }
+
+    @Ignore
+    public Plant(String name, int wateringCycle, LocalDate lastWatered, String lightReq, String toxicity){
+        this.name = name;
+        this.wateringCycle = wateringCycle;
+        this.lastWatered = lastWatered;
         this.lightReq = lightReq;
         this.toxicity = toxicity;
     }
@@ -49,11 +60,11 @@ public class Plant {
         this.wateringCycle = wateringCycle;
     }
 
-    public Date getLastWatered() {
+    public LocalDate getLastWatered() {
         return lastWatered;
     }
 
-    public void setLastWatered(Date lastWatered) {
+    public void setLastWatered(LocalDate lastWatered) {
         this.lastWatered = lastWatered;
     }
 
