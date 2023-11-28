@@ -47,11 +47,14 @@ import androidx.compose.ui.unit.sp
 import androidx.room.Room
 import com.chargemap.compose.numberpicker.NumberPicker
 import com.example.greenthumb.ui.theme.GreenThumbTheme
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
-
-
-
+    // TODO: Make adding plant give an indication of the plant being added.
+    // TODO: Make next plant in list not appear expanded when deleting.
+    // TODO: Overhaul UI.
+    // Title Screen image and main app image for background
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -104,8 +107,6 @@ fun TitleScreen(
         }
     }
 }
-
-
 
 @Composable
 fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
@@ -242,7 +243,11 @@ fun PlantCard(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Pl
 @Composable
 fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
     var expandedCard by remember { mutableStateOf(false) }
-
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //Need to add checkbox, display stuff properly (Name, number of days until next water,
+    // last watered, light reqs and pet saftey), images for light.
+    // Stretch goals -> Maybe leaf backgrounds for each plant tab?
+    ///////////////////////////////////////////////////////////////////////////////////////
     Row {
         var modifier = Modifier
             .padding(12.dp)
@@ -279,8 +284,14 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
         Row {
             Text(text = plant.getWateringCycle().toString())
             Text(text = plant.getLightReq())
+            if(plant.getLastWatered() != null){
+                Text(text = plant.getLastWatered().toString())
+            }
             Button(onClick = { deletePlant(plant, plantDao, plantArray) }) {
                 Text(text = "Delete")
+            }
+            Button(onClick = { plantWatered(plant, plantDao, plantArray) }) {
+                Text(text = "Watered")
             }
         }
     }
@@ -298,10 +309,23 @@ fun deletePlant(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
     }
 }
 
+fun plantWatered(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
+    val formatter = SimpleDateFormat("yyyy-MM-dd");
+    val date = Date()
+    val currentDateString = formatter.format(date)
+    val currentDateDate = formatter.parse(currentDateString);
+
+    plant.setLastWatered(currentDateDate)
+
+    for ((index, listedPlant) in plantArray.withIndex()) {
+        if (plant.getPlant_id() == listedPlant.getPlant_id()){
+            plantArray[index] =  plant;
+        }
+    }
+    plantDao.update(plant);
+}
 
 fun captureInput(plantName: String, water: Int, light: String, toxicity: String, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
-
-
     Log.i("USER_SUBMIT", "Name of plant: $plantName");
     Log.i("USER_SUBMIT", "Water req: $water");
     Log.i("USER_SUBMIT", "Light req: $light");
@@ -311,11 +335,3 @@ fun captureInput(plantName: String, water: Int, light: String, toxicity: String,
     Log.i("INSERT", "" + plantDao.getAll());
     plantArray.add(Plant(plantName, water, light, toxicity))
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun GreetingPreview() {
-//    PlantWateringTheme {
-//        Main("Android")
-//    }
-//}
