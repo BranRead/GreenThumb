@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -413,13 +414,16 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
     }
     if (expandedCard){
 
-        Row {
+        Row (
+            modifier = Modifier
+                .padding(16.dp, 4.dp)
+        ){
             if (plant.getLastWatered() != null) {
                 Text(
                     text = "Last watered on: " +
                             plant.getLastWatered().month.toString() + " " +
                             plant.getLastWatered().dayOfMonth.toString(),
-                    style = MaterialTheme.typography.labelMedium.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Normal,
                         color = Color(246, 245, 250, 255)
                     )
@@ -427,10 +431,13 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
             }
         }
 
-        Row{
+        Row (
+            modifier = Modifier
+                .padding(16.dp, 4.dp)
+        ){
             if (plant.getLastWatered() != null) {
                 Text(text = daysUntilNextWaterBody(plant, plantDao),
-                        style = MaterialTheme.typography.labelMedium.copy(
+                        style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Normal,
                             color = Color(246, 245, 250, 255)
                         )
@@ -438,40 +445,37 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
             }
         }
 
-        Row{
-            Text(text = "Details:",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Normal,
-                        color = Color(246, 245, 250, 255)
-                    )
+        Row (
+            modifier = Modifier
+                .padding(16.dp, 4.dp)
+        ){
+            Text(text = "Light Requirements: " + plant.getLightReq(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Normal,
+                    color = Color(246, 245, 250, 255)
+                )
             )
         }
 
-        Row{
-            Column {
-                Text(text = "Light requirements: " + plant.getLightReq(),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Normal,
-                        color = Color(246, 245, 250, 255)
-                    )
+        Row (
+            modifier = Modifier
+                .padding(16.dp, 4.dp)
+        ){
+            Text(text = "Toxicity: " + plant.getToxicity(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Normal,
+                    color = Color(246, 245, 250, 255)
                 )
-            }
-            Column {
-                Text(text = "Toxicity: " + plant.getToxicity(),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Normal,
-                        color = Color(246, 245, 250, 255)
-                    )
-                )
-            }
+            )
         }
 
         Row {
             Column (
                 modifier = Modifier
-                .weight(1f)
-                .padding(8.dp)
-                .background(Color(144, 103, 198, 255)),
+                    .weight(1f)
+                    .padding(40.dp, 8.dp)
+                    .background(Color(144, 103, 198, 255), RoundedCornerShape(30.dp))
+                    .border(2.dp, Color(4, 15, 15, 255), RoundedCornerShape(30.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 IconButton(onClick = { plantWatered(plant, plantDao, plantArray) }) {
@@ -485,8 +489,9 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
             Column (
                 modifier = Modifier
                     .weight(1f)
-                    .padding(8.dp)
-                    .background(Color(142, 68, 61, 255)),
+                    .padding(40.dp, 8.dp)
+                    .background(Color(142, 68, 61, 255), RoundedCornerShape(30.dp))
+                    .border(2.dp, Color(4, 15, 15, 255), RoundedCornerShape(30.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 IconButton(onClick = { deletePlant(plant, plantDao, plantArray) }) {
