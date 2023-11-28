@@ -111,8 +111,13 @@ fun TitleScreen(
 @Composable
 fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
 
+
     val plantArray = remember {
         mutableStateListOf<Plant>()
+    }
+
+    for (plant in plants) {
+        plantArray.add(plant)
     }
 
     LazyColumn (modifier = Modifier.padding(vertical = 4.dp)) {
@@ -296,6 +301,7 @@ fun captureInput(plantName: String, water: Int, light: String, toxicity: String,
     Log.i("USER_SUBMIT", "Tox: $toxicity");
 
     plantDao.insertAll(Plant(plantName, water, light, toxicity))
+    Log.i("INSERT", "" + plantDao.getAll());
     plantArray.add(Plant(plantName, water, light, toxicity))
 }
 
