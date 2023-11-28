@@ -61,6 +61,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -228,7 +229,7 @@ fun AddNewPlantCard(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
     Column {
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = Color(142, 68, 61, 210),
+                containerColor = Color(36, 130, 50, 210),
             ),
             modifier = Modifier
                 .padding(vertical = 4.dp, horizontal = 8.dp)
@@ -411,31 +412,90 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
         }
     }
     if (expandedCard){
-        Row {
-            Text(text = plant.getWateringCycle().toString())
-            Text(text = plant.getLightReq())
-            if(plant.getLastWatered() != null){
-                Text(text = plant.getLastWatered().month.toString() + " " + plant.getLastWatered().dayOfMonth)
-                Text(text = daysUntilNextWaterBody(plant, plantDao))
-            }
 
+        Row {
+            if (plant.getLastWatered() != null) {
+                Text(
+                    text = "Last watered on: " +
+                            plant.getLastWatered().month.toString() + " " +
+                            plant.getLastWatered().dayOfMonth.toString(),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Normal,
+                        color = Color(246, 245, 250, 255)
+                    )
+                )
+            }
+        }
+
+        Row{
+            if (plant.getLastWatered() != null) {
+                Text(text = daysUntilNextWaterBody(plant, plantDao),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Normal,
+                            color = Color(246, 245, 250, 255)
+                        )
+                )
+            }
+        }
+
+        Row{
+            Text(text = "Details:",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Normal,
+                        color = Color(246, 245, 250, 255)
+                    )
+            )
+        }
+
+        Row{
+            Column {
+                Text(text = "Light requirements: " + plant.getLightReq(),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Normal,
+                        color = Color(246, 245, 250, 255)
+                    )
+                )
+            }
+            Column {
+                Text(text = "Toxicity: " + plant.getToxicity(),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Normal,
+                        color = Color(246, 245, 250, 255)
+                    )
+                )
+            }
         }
 
         Row {
-            IconButton(onClick = { plantWatered(plant, plantDao, plantArray) }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.plantwatered),
-                    contentDescription = "Plant watered today",
-                    modifier = Modifier.size(50.dp)
-                )
+            Column (
+                modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+                .background(Color(144, 103, 198, 255)),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                IconButton(onClick = { plantWatered(plant, plantDao, plantArray) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.plantwatered),
+                        contentDescription = "Plant watered today",
+                        modifier = Modifier.size(50.dp)
+                    )
+                }
             }
-
-            IconButton(onClick = { deletePlant(plant, plantDao, plantArray) }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.deleteentry),
-                    contentDescription = "Remove plant from list",
-                    modifier = Modifier.size(30.dp)
-                )
+            Column (
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp)
+                    .background(Color(142, 68, 61, 255)),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IconButton(onClick = { deletePlant(plant, plantDao, plantArray) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.deleteentry),
+                        contentDescription = "Remove plant from list",
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
             }
         }
     }
@@ -453,14 +513,15 @@ fun daysUntilNextWaterTitle(plant: Plant, plantDao: PlantDao): String {
 }
 
 fun daysUntilNextWaterBody(plant: Plant, plantDao: PlantDao): String {
-
     val localDate: LocalDate = LocalDate.now()
     val lastWater = Period.between(plant.getLastWatered(), localDate).days
     val daysPassed = plant.getWateringCycle() - lastWater;
-    if(daysPassed >= 0){
-        return "Plant will need to be watered in: " + daysPassed + " day(s).";
+    if(daysPassed > 0){
+        return "Water in: " + daysPassed + " day(s).";
+    } else if (daysPassed == 0){
+        return "Water today!";
     } else {
-        return "Plant should've been watered: " + daysPassed.absoluteValue + " day(s) ago.";
+        return "Overdo for watering by: " + daysPassed.absoluteValue + " day(s).";
     }
 }
 
