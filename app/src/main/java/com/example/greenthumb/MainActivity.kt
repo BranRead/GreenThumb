@@ -2,6 +2,7 @@ package com.example.greenthumb
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.NumberPicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
@@ -31,10 +32,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,33 +45,43 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.Room
+import com.chargemap.compose.numberpicker.NumberPicker
 import com.example.greenthumb.ui.theme.GreenThumbTheme
 
 class MainActivity : ComponentActivity() {
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val plantDB = PlantDB(this@MainActivity)
+        val plantDB = Room.databaseBuilder(
+            applicationContext,
+            PlantDatabase::class.java, "greenthumb-database"
+        ).build()
 
-        val plants = plantDB.getRecords().toList()
+        val plantDao = plantDB.plantDao()
+
+        val plants: List<Plant> = plantDao.getAll();
 
         setContent {
             GreenThumbTheme {
                 // A surface container using the 'background' color from the theme
-                MyApp(plants = plants, plantDB)
+                MyApp(plants, plantDao)
             }
         }
     }
 }
 
 @Composable
-fun MyApp(plants: List<Array<String>>, plantDB: PlantDB){
+fun MyApp(plants: List<Plant>, plantDao: PlantDao){
     var isTitleScreen by rememberSaveable {mutableStateOf(true)}
     Surface(modifier = Modifier.fillMaxSize(), color = Color(234, 242, 239, 255)) {
         if(isTitleScreen) {
             TitleScreen(onContinueClicked = { isTitleScreen = false })
         } else {
-            SeparateCards(array = plants, plantDB)
+            SeparateCards(plants, plantDao)
         }
     }
 }
@@ -93,55 +106,49 @@ fun TitleScreen(
     }
 }
 
+
+
 @Composable
-fun AddNewPlantCard(
-    plantDB: PlantDB,
-    modifier: Modifier = Modifier
-){
+fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
+
+    val plantArray = remember {
+        mutableStateListOf<Plant>()
+    }
+
+    LazyColumn (modifier = Modifier.padding(vertical = 4.dp)) {
+        items (1){
+            AddNewPlantCard(plantDao, plantArray)
+        }
+        items (items = plantArray) {plant ->
+            PlantCard(plant)
+        }
+//        items(1){
+//            Button(onClick = {  }) {
+//
+//            }
+//        }
+    }
+}
+
+@Composable
+fun AddNewPlantCard(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
     Column {
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = Color(102, 119, 97, 255),
-                ),
+            ),
             modifier = Modifier
                 .padding(vertical = 4.dp, horizontal = 8.dp)
                 .border(2.dp, Color(13, 9, 10, 255), RoundedCornerShape(10.dp))
         ) {
-            CardContentEntry(plantDB)
+            CardContentEntry(plantDao, plantArray)
         }
-    }
-}
-
-@Composable
-fun SeparateCards(array: List<Array<String>>, plantDB: PlantDB){
-
-    LazyColumn (modifier = Modifier.padding(vertical = 4.dp)) {
-        items (1){
-            AddNewPlantCard(plantDB)
-        }
-        items(items = array) {plant ->
-            PlantCard(plant)
-        }
-    }
-}
-
-@Composable
-fun PlantCard(array: Array<String>) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color(102, 119, 97, 255)
-        ),
-        modifier = Modifier
-            .padding(vertical = 4.dp, horizontal = 8.dp)
-            .border(2.dp, Color(13, 9, 10, 255), RoundedCornerShape(10.dp))
-    ) {
-        CardContent(array)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardContentEntry(plantDB: PlantDB) {
+fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
     var expandedCard by remember { mutableStateOf(false) }
 
     Row {
@@ -165,7 +172,7 @@ fun CardContentEntry(plantDB: PlantDB) {
         }
         Column {
             Button(onClick = { expandedCard = !expandedCard }) {
-               Text(text = "Add")
+                Text(text = "Add")
             }
         }
     }
@@ -175,7 +182,7 @@ fun CardContentEntry(plantDB: PlantDB) {
         ) {
             Column {
                 var plantName by remember { mutableStateOf("") }
-                var water by remember { mutableStateOf("") }
+                var water by remember { mutableStateOf(0) }
                 var light by remember { mutableStateOf("") }
                 var toxicity by remember { mutableStateOf("") }
 
@@ -187,10 +194,12 @@ fun CardContentEntry(plantDB: PlantDB) {
                     )
                 }
                 Row{
-                    TextField(
+                    NumberPicker(
                         value = water,
-                        onValueChange = { water = it },
-                        label = { Text(text = "Water req.")}
+                        range = 1..30,
+                        onValueChange = {
+                            water = it
+                        }
                     )
                 }
                 Row{
@@ -207,7 +216,7 @@ fun CardContentEntry(plantDB: PlantDB) {
                         label = { Text(text = "Toxicity")}
                     )
                 }
-                Button(onClick = { captureInput(plantName, water, light, toxicity, plantDB) }) {
+                Button(onClick = { captureInput(plantName, water.toInt(), light, toxicity, plantDao, plantArray) }) {
                     Text(text = "Submit")
                 }
             }
@@ -216,9 +225,24 @@ fun CardContentEntry(plantDB: PlantDB) {
 }
 
 @Composable
-fun CardContent(array: Array<String>) {
-    var expandedCard by remember { mutableStateOf(false) }
+fun PlantCard(plant: Plant) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color(102, 119, 97, 255)
+        ),
+        modifier = Modifier
+            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .border(2.dp, Color(13, 9, 10, 255), RoundedCornerShape(10.dp))
+    ) {
+        CardContent(plant)
+    }
+}
 
+
+
+@Composable
+fun CardContent(plant: Plant) {
+    var expandedCard by remember { mutableStateOf(false) }
 
     Row {
         var modifier = Modifier
@@ -234,7 +258,7 @@ fun CardContent(array: Array<String>) {
                 .weight(1f)
                 .padding(12.dp)
         ){
-            Text(text = array[0], style = MaterialTheme.typography.headlineLarge.copy(
+            Text(text = plant.getName(), style = MaterialTheme.typography.headlineLarge.copy(
                 fontWeight = FontWeight.Thin,
                 fontSize = 32.sp
             ))
@@ -254,14 +278,16 @@ fun CardContent(array: Array<String>) {
     }
     if (expandedCard){
         Row {
-            Text(text = array[1])
-            Text(text = array[2])
+            Text(text = plant.getWateringCycle().toString())
+            Text(text = plant.getLightReq())
         }
     }
-    
 }
 
-fun captureInput(plantName: String, water: String, light: String, toxicity: String, plantDB: PlantDB) {
+
+
+
+fun captureInput(plantName: String, water: Int, light: String, toxicity: String, plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
 
 
     Log.i("USER_SUBMIT", "Name of plant: $plantName");
@@ -269,8 +295,8 @@ fun captureInput(plantName: String, water: String, light: String, toxicity: Stri
     Log.i("USER_SUBMIT", "Light req: $light");
     Log.i("USER_SUBMIT", "Tox: $toxicity");
 
-    plantDB.handleSQL(plantName, water, light, toxicity);
-    // TODO: Call onCreate after this is done
+    plantDao.insertAll(Plant(plantName, water, light, toxicity))
+    plantArray.add(Plant(plantName, water, light, toxicity))
 }
 
 //@Preview(showBackground = true)
