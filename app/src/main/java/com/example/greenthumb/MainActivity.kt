@@ -19,15 +19,14 @@
 
 package com.example.greenthumb
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageButton
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,13 +47,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons.Filled
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -74,9 +74,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.room.Room
 import com.chargemap.compose.numberpicker.NumberPicker
 import com.example.greenthumb.ui.theme.GreenThumbTheme
@@ -86,13 +87,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
-    // TODO: Make adding plant give an indication of the plant being added.
-    // TODO: Make next plant in list not appear expanded when deleting.
-    // TODO: Overhaul UI.
-    // Make entire card clickable for dropdown
-    // Icons for launcher and buttons
-    // Format card info
-    // Format add plant
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -141,6 +136,7 @@ fun MyApp(plants: List<Plant>, plantDao: PlantDao){
             TitleScreen(onContinueClicked = { isTitleScreen = false })
         } else {
             SeparateCards(plants, plantDao)
+
         }
     }
 }
@@ -182,31 +178,38 @@ fun TitleScreen(
                 Row (
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp, 16.dp),
+                        .padding(16.dp, 16.dp, 16.dp, 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
 
                 ){
                     Text(text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineLarge
-                            .copy(color = Color(246, 245, 250, 255))
+                            .copy(
+                                color = Color(246, 245, 250, 255),
+                                fontFamily = FontFamily.Serif
+                            )
                     )
                 }
                 Row (
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp, 16.dp),
+                        .padding(16.dp, 0.dp, 16.dp, 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ){
                     Text(text = "Tap to start!",
-                        color = Color(246, 245, 250, 255))
+                        color = Color(246, 245, 250, 255),
+                        fontFamily = FontFamily.Serif)
                 }
             }
         }
     }
 }
 
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
     Box(modifier = with(Modifier){
@@ -223,20 +226,49 @@ fun SeparateCards(plants: List<Plant>, plantDao: PlantDao){
             plantArray.add(plant)
         }
 
-        LazyColumn (modifier = Modifier.padding(vertical = 4.dp)) {
-            items (1){
-                AddNewPlantCard(plantDao, plantArray)
+        Column {
+            Column(
+                modifier = Modifier
+                    .background(Color(36, 130, 50, 255))
+                    .fillMaxWidth()
+                    .height(100.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                var expandedCard by remember { mutableStateOf(false) }
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp, 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Text(text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineMedium
+                            .copy(
+                                color = Color(246, 245, 250, 255),
+                                fontFamily = FontFamily.Serif
+                            )
+                    )
+                }
             }
-            items (items = plantArray) {plant ->
-                PlantCard(plant, plantDao, plantArray)
+
+            LazyColumn(modifier = Modifier.padding(vertical = 4.dp)) {
+                items (1){
+                    AddNewPlantCard(plantDao, plantArray)
+                }
+                items(items = plantArray) { plant ->
+                    PlantCard(plant, plantDao, plantArray)
+                }
             }
+
         }
+
+
     }
 }
 
 @Composable
 fun AddNewPlantCard(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
-    Column {
+    Column (modifier = Modifier.fillMaxWidth()){
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = Color(36, 130, 50, 210),
@@ -264,36 +296,21 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
                     stiffness = Spring.StiffnessMediumLow
                 )
             )
-        Column (
-            modifier = Modifier
-                .padding(8.dp)
-                .weight(3f),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
-        ){
-            Text(text = "New plant", style = MaterialTheme.typography.headlineSmall.copy(
-                fontWeight = FontWeight.Normal,
-                color = Color(246, 245, 250, 255)
-            ))
-        }
-        Column (
-            modifier = Modifier
-                .weight(1f),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            IconButton(onClick = { expandedCard = !expandedCard }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.addplant),
-                    contentDescription = "Add new plant",
-                    modifier = Modifier.size(35.dp)
-                )
-            }
+        IconButton(onClick = {
+            expandedCard = !expandedCard
+        }) {
+            Icon(
+                painter = painterResource(id = R.drawable.addplantexpanded),
+                contentDescription = "Add new plant",
+                modifier = Modifier.size(100.dp)
+            )
         }
     }
     if (expandedCard){
             Column (
-                modifier = Modifier.padding(32.dp, 4.dp).fillMaxHeight(),
+                modifier = Modifier
+                    .padding(32.dp, 4.dp)
+                    .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 var plantName by remember { mutableStateOf("") }
@@ -310,38 +327,7 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
                         label = { Text(text = "Plant name")}
                     )
                 }
-                Row(
-                    modifier = Modifier
-                        .background(Color(246, 245, 250, 255))
-                        .padding(0.dp, 8.dp)
 
-                ){
-                    Column (
-                        modifier = Modifier
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(text = "Days between watering: ",
-                            modifier = Modifier.padding(16.dp, 54.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                    }
-
-
-                    Column (
-                        modifier = Modifier.padding(16.dp, 0.dp)
-                    ){
-                        // Using NumberPicker library found here:
-                        // https://github.com/ChargeMap/Compose-NumberPicker
-                        NumberPicker(
-                            value = water,
-                            range = 1..30,
-                            onValueChange = {
-                                water = it
-                            }
-                        )
-                    }
-                }
                 Row(
                     modifier = Modifier
                 ){
@@ -360,6 +346,40 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
                         label = { Text(text = "Toxicity")}
                     )
                 }
+                Row(
+                    modifier = Modifier
+                        .padding(0.dp, 8.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+
+                ){
+                    Column (
+                        modifier = Modifier
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = "Days between watering: ",
+                            modifier = Modifier.padding(16.dp, 54.dp),
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                color = Color(246, 245, 250, 255)
+                            ),
+                        )
+                    }
+                    Column (
+                        modifier = Modifier
+                            .padding(16.dp, 0.dp)
+                    ){
+                        // Using NumberPicker library found here:
+                        // https://github.com/ChargeMap/Compose-NumberPicker
+                        NumberPicker(
+                            value = water,
+                            range = 1..30,
+                            onValueChange = {
+                                water = it
+                            },
+                            textStyle = TextStyle(Color(246, 245, 250, 255))
+                        )
+                    }
+                }
                 IconButton(onClick = {
                     captureInput(plantName, water.toInt(), light, toxicity, plantDao, plantArray)
                     expandedCard = !expandedCard
@@ -367,7 +387,7 @@ fun CardContentEntry(plantDao: PlantDao, plantArray: SnapshotStateList<Plant>) {
                     Icon(
                         painter = painterResource(id = R.drawable.addplantexpanded),
                         contentDescription = "Add new plant",
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(100.dp)
                     )
                 }
             }
@@ -415,8 +435,8 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
         ){
             Text(text = plant.getName(), style = MaterialTheme.typography.headlineLarge.copy(
                 fontWeight = FontWeight.Thin,
-                fontSize = 30.sp,
-                color = Color(246, 245, 250, 255)
+                color = Color(246, 245, 250, 255),
+                fontFamily = FontFamily.Serif
             ))
         }
         Column (
@@ -431,7 +451,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
                 Text(
                     text = daysUntilNextWaterTitle(plant, plantDao),
                     modifier = Modifier.padding(0.dp, 16.dp),
-                    style = MaterialTheme.typography.labelMedium.copy(
+                    style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Normal,
                         color = Color(246, 245, 250, 255)
                     )
@@ -459,13 +479,11 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(48.dp, 4.dp)
+                .padding(40.dp, 4.dp)
         ){
             if (plant.getLastWatered() != null) {
                 Text(
-                    text = "Last watered on: " +
-                            plant.getLastWatered().month.toString() + " " +
-                            plant.getLastWatered().dayOfMonth.toString(),
+                    text = plant.getLastWaterDate(),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Normal,
                         color = Color(246, 245, 250, 255)
@@ -476,7 +494,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(48.dp, 4.dp)
+                .padding(40.dp, 4.dp)
         ){
             if (plant.getLastWatered() != null) {
                 Text(text = daysUntilNextWaterBody(plant, plantDao),
@@ -490,7 +508,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(48.dp, 4.dp)
+                .padding(40.dp, 4.dp)
         ){
             Text(text = "Light Requirements: " + plant.getLightReq(),
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -502,7 +520,7 @@ fun CardContent(plant: Plant, plantDao: PlantDao, plantArray: SnapshotStateList<
 
         Row (
             modifier = Modifier
-                .padding(48.dp, 4.dp)
+                .padding(40.dp, 4.dp)
         ){
             Text(text = "Toxicity: " + plant.getToxicity(),
                 style = MaterialTheme.typography.bodyLarge.copy(

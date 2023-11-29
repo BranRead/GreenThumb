@@ -44,6 +44,32 @@ public class Plant {
         this.toxicity = toxicity;
     }
 
+    public String getLastWaterDate(){
+        String month = this.getLastWatered().getMonth().toString();
+        int day = this.getLastWatered().getDayOfMonth();
+        String dayString = String.valueOf(this.getLastWatered().getDayOfMonth());
+        String daySuffix;
+
+        for (int i = 0; i < month.length(); i++) {
+            Character c = month.charAt(i);
+            if(i > 0){
+                month = month.replace(month.charAt(i), Character.toLowerCase(c));
+            }
+        }
+
+        if(day == 1 || day == 11 || day == 21 || day == 31){
+            daySuffix = "st";
+        } else if(day == 2 || day == 12 || day == 22) {
+            daySuffix = "nd";
+        } else if(day == 3 || day == 13 || day == 23) {
+            daySuffix = "rd";
+        } else {
+            daySuffix = "th";
+        }
+
+        return "Last watered on: " + month + ", " + dayString + daySuffix;
+    }
+
     public String getName() {
         return name;
     }
